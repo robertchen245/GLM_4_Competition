@@ -56,13 +56,13 @@ tools = [
         "type": "function",
         "function": {
             "name": "search_company_name_by_info",
-            "description": "根据提供的一般信息的某个字段的某个值查询具体公司的名称,如果在搜索公司名称的时候没有搜到，可以选择这个工具查找全名",
+            "description": "根据提供的一般信息的某个字段的某个值查询具体公司的名称,可以选择这个工具查找可能为非公司全称的，公司简称、或者名称、曾用简称",
             "parameters": {
                 "type": "object",
                 "properties": {
                     "key": {
                         "type": "string",
-                        "description": "'公司名称', '公司简称', '英文名称', '关联证券', '公司代码', '曾用简称', '所属市场', '所属行业', '上市日期', '法人代表', '总经理', '董秘', '邮政编码', '注册地址', '办公地址', '联系电话', '传真', '官方网站', '电子邮箱', '入选指数', '主营业务', '经营范围', '机构简介', '每股面值', '首发价格', '首发募资净额', '首发主承销商'",
+                        "description": "'公司简称', '英文名称', '关联证券', '公司代码', '曾用简称', '所属市场', '所属行业', '上市日期', '法人代表', '总经理', '董秘', '邮政编码', '注册地址', '办公地址', '联系电话', '传真', '官方网站', '电子邮箱', '入选指数', '主营业务', '经营范围', '机构简介', '每股面值', '首发价格', '首发募资净额', '首发主承销商'",
                     },
                     "value": {
                         "type": "string",
@@ -94,6 +94,23 @@ tools = [
             },
         },
     },
+    {
+        "type": "function",
+        "function": {
+            "name": "get_sub_company_info",
+            "description": "根据子公司名称获得其母公司的所有关联子公司信息",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "company_name": {
+                        "type": "string",
+                        "description": "公司名称",
+                    },
+                },
+                "required": ["company_name"],
+            },
+        },
+    },
 ]
 def get_company_info(args,origin_url,headers):
     url = origin_url+'get_company_info'
@@ -115,6 +132,14 @@ def search_company_name_by_info(args,origin_url,headers):
     url = origin_url+'search_company_name_by_info'
     rsp = requests.post(url, json=json.loads(args), headers=headers)
     return rsp
+def get_sub_company_info(args,origin_url,headers):
+    url = origin_url+'get_sub_company_info'
+    rsp = requests.post(url, json=json.loads(args), headers=headers)
+    return rsp
+def search_company_name_by_register(args,origin_url,headers):
+    url = origin_url+'search_company_name_by_register'
+    rsp = requests.post(url, json=json.loads(args), headers=headers)
+    return rsp
 def use_the_tool(tool_calls:str,origin_url:str,headers:dict):
     if tool_calls is not None:
         function = tool_calls[0].function
@@ -125,8 +150,10 @@ def use_the_tool(tool_calls:str,origin_url:str,headers:dict):
             "get_company_info":get_company_info,
             "get_company_register":get_company_register,
             "get_company_info_and_register":get_company_info,
-            "search_company_name_by_info":search_company_name_by_info
+            "search_company_name_by_info":search_company_name_by_info,
+            "search_company_name_by_register":search_company_name_by_register,
+            "get_sub_company_info":get_sub_company_info
         }
         return func_tools[func_name](func_args,origin_url,headers)
     else:
-        return {"提示":"由于没有匹配到合适的工具，请你输出'exit'，并且不需要任何额外的内容"}
+        return None
