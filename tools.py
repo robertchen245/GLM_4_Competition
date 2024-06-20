@@ -5,7 +5,7 @@ tools = [
         "type": "function",
         "function": {
             "name": "get_company_info",
-            "description": "根据提供的公司名称查询该公司的基本信息",
+            "description": "根据提供的公司名称（只能接受明显是公司的具体全称）查询该公司的基本信息（不包含控股信息）",
             "parameters": {
                 "type": "object",
                 "properties": {
@@ -22,7 +22,7 @@ tools = [
         "type": "function",
         "function": {
             "name": "get_company_register",
-            "description": "根据提供的公司名称查询该公司的注册信息",
+            "description": "根据提供的公司名称（只能接受明显是公司的具体全称）查询该公司的注册信息（不包含控股信息）",
             "parameters": {
                 "type": "object",
                 "properties": {
@@ -39,7 +39,7 @@ tools = [
         "type": "function",
         "function": {
             "name": "get_company_info_and_register",
-            "description": "根据提供的公司名称，如果需求的条目既包含基本信息，又包含注册信息，则使用这个",
+            "description": "根据提供的公司名称查询该公司的基本信息和注册信息（不包含控股信息）",
             "parameters": {
                 "type": "object",
                 "properties": {
@@ -56,7 +56,7 @@ tools = [
         "type": "function",
         "function": {
             "name": "search_company_name_by_info",
-            "description": "根据提供的一般信息的某个字段的某个值查询具体公司的名称,可以选择这个工具查找可能为非公司全称的，公司简称、或者名称、曾用简称",
+            "description": "根据提供的一般信息字段所属行业和值(如所属行业等)查询公司的具体名称。建议在其他工具无法找到信息时使用，特别是当输入的是公司简称时。",
             "parameters": {
                 "type": "object",
                 "properties": {
@@ -77,7 +77,7 @@ tools = [
         "type": "function",
         "function": {
             "name": "search_company_name_by_register",
-            "description": "根据提供的'注册信息'的某个字段的某个值查询具体公司的名称",
+            "description": "根据提供的注册信息字段和值查询公司的具体名称。",
             "parameters": {
                 "type": "object",
                 "properties": {
@@ -98,7 +98,7 @@ tools = [
         "type": "function",
         "function": {
             "name": "get_sub_company_info",
-            "description": "根据子公司名称获得其母公司的所有关联子公司信息",
+            "description": "当提供的是子公司名称时，获取母公司的信息以及母公司对该子公司的投资信息。如果获得了大量子公司信息，应该依次使用这个工具来获取他们和母公司之间的投资信息。",
             "parameters": {
                 "type": "object",
                 "properties": {
@@ -108,6 +108,27 @@ tools = [
                     },
                 },
                 "required": ["company_name"],
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "search_company_name_by_sub_info",
+            "description": "当提供的是母公司名称时，查询其控股的子公司名称。本工具只能搜索到子公司名称，具体投资信息请使用其他工具。",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "key": {
+                        "type": "string",
+                        "description": "key固定为'关联上市公司全称',并非实际名称",
+                    },
+                    "value": {
+                        "type": "string",
+                        "description": "公司的实际全称",
+                    },
+                },
+                "required": ["key","value"],
             },
         },
     },
@@ -140,6 +161,10 @@ def search_company_name_by_register(args,origin_url,headers):
     url = origin_url+'search_company_name_by_register'
     rsp = requests.post(url, json=json.loads(args), headers=headers)
     return rsp
+def search_company_name_by_sub_info(args,origin_url,headers):
+    url = origin_url+'search_company_name_by_sub_info'
+    rsp = requests.post(url, json=json.loads(args), headers=headers)
+    return rsp
 def use_the_tool(tool_calls:str,origin_url:str,headers:dict):
     if tool_calls is not None:
         function = tool_calls[0].function
@@ -152,7 +177,8 @@ def use_the_tool(tool_calls:str,origin_url:str,headers:dict):
             "get_company_info_and_register":get_company_info,
             "search_company_name_by_info":search_company_name_by_info,
             "search_company_name_by_register":search_company_name_by_register,
-            "get_sub_company_info":get_sub_company_info
+            "get_sub_company_info":get_sub_company_info,
+            "search_company_name_by_sub_info":search_company_name_by_sub_info,
         }
         return func_tools[func_name](func_args,origin_url,headers)
     else:
