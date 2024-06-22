@@ -1,5 +1,6 @@
 import requests
 import json
+from agents import agent_sub_info
 tools = [
     {
         "type": "function",
@@ -136,7 +137,7 @@ tools = [
         "type": "function",
         "function": {
             "name": "search_company_name_by_sub_info",
-            "description": "母公司查找子公司：当提供的是母公司名称时，查询其控股、投资的子公司名单",
+            "description": "母公司查找子公司：当提供的是母公司名称时，查询其控股、投资的子公司名单，提示：仅名单，无投资具体信息",
             "parameters": {
                 "type": "object",
                 "properties": {
@@ -163,7 +164,7 @@ tools = [
                 "properties": {
                     "case_num": {
                         "type": "string",
-                        "description": "正确格式：(1234)某1234某某1234号\n错误格式：（1234）某1234某某1234号",
+                        "description": "必须使用英语括号，正确格式:(1234)某1234某某1234号",
                     },
                 },
                 "required": ["case_num"],
@@ -195,7 +196,7 @@ tools = [
         "type": "function",
         "function": {
             "name": "investment_information",
-            "description": "给定了母公司，查询其子公司的控股、投资比例有关的信息",
+            "description": "给定了母公司，查询其子公司的控股比例，投资比例有关的信息",
             "parameters": {
                 "type": "object",
                 "properties": {
@@ -213,71 +214,61 @@ tools = [
         },
     },
 ]
-categories=f"""
-你是一个帮助专精于将给定的“问题”进行“分类”的助手，请你对这个问题进行多分类，即可能包含1个或者多个类别
-类别：1.母公司查找子公司，涉及投资信息 2.子公司查找母公司 3.根据公司的名称查找公司信息 4.法律文书判决相关 5. 给定了母公司，查询其子公司的控股、投资比例 6.开放性问题 7.先得知主体企业的行业类型，再根据行业的类型，查找属于该行业的所有企业\n
-下面是3个问答的例子：
-例1:你接收到的问题：想问问，浙江杰克成套智联科技有限公司、上海三菱电梯有限公司、潍坊西能宝泉天然气有限公司分别属于哪家公司旗下。分析：2.问题分类：子公司查找母公司。 主体：浙江杰克成套智联科技有限公司、上海三菱电梯有限公司、潍坊西能宝泉天然气有限公司
-例2:你接收到的问题：劲拓股份拥有哪些子公司？分析：1.母公司查找子公司。主体：劲拓股份
-例3:你接收到的问题：请问Beijing Comens New Materials Co., Ltd.全资控股的子公司有哪些？或 持股超过50%的子公司有哪些？分析：5.查询子公司的控股投资比例，主体：Beijing Comens New Materials Co., Ltd.
-例4:你接收到的问题：广汇能源股份有限公司的主要投资者是哪一家企业？分析：5. 给定了母公司，查询其子公司的控股、投资比例。主体：广汇能源股份有限公司
-例5:你接收到的问题：帮忙找下无锡上机数控股份有限公司的企业主承销商以及首次公开发行募集资金净额。分析：3.根据公司的名称查找公司信息。主体：无锡上机数控股份有限公司
-例6:你接收到的问题：关于案号为(2019)鄂01民初4724号的案件，能否提供原告和被告的详细身份信息，并阐述该案件的具体诉讼理由？分析：4.法律文书判决相关。主体：(2019)鄂01民初4724号
 
-请你严格按照例子的格式给出分类，不允许进行推测以及额外信息
-"""
-def get_company_info(args,origin_url,headers):
+def get_company_info(args,origin_url,headers,question):
     url = origin_url+'get_company_info'
     rsp = requests.post(url, json=json.loads(args), headers=headers)
     return rsp.json()
-def get_company_register(args,origin_url,headers):
+def get_company_register(args,origin_url,headers,question):
     url = origin_url+'get_company_register'
     rsp = requests.post(url, json=json.loads(args), headers=headers)
     return rsp.json()
-def get_company_info_and_register(args,origin_url,headers):
+def get_company_info_and_register(args,origin_url,headers,question):
     """根据公司的名称：得到基本信息和注册信息"""
-    rsp1 = get_company_info(args,origin_url,headers)
-    rsp2 = get_company_register(args,origin_url,headers)
+    rsp1 = get_company_info(args,origin_url,headers,question)
+    rsp2 = get_company_register(args,origin_url,headers,question)
     rsp={**rsp1.json(),**rsp2.json()}
     return rsp.json()
-def get_brief_name(args,origin_url,headers):
+def get_brief_name(args,origin_url,headers,question):
     pass
-def search_company_name_by_info(args,origin_url,headers):
+def search_company_name_by_info(args,origin_url,headers,question):
     url = origin_url+'search_company_name_by_info'
     rsp = requests.post(url, json=json.loads(args), headers=headers)
     return rsp.json()
-def get_sub_company_info(args,origin_url,headers):
+def get_sub_company_info(args,origin_url,headers,question):
     url = origin_url+'get_sub_company_info'
     rsp = requests.post(url, json=json.loads(args), headers=headers)
     return rsp.json()
-def search_company_name_by_register(args,origin_url,headers):
+def search_company_name_by_register(args,origin_url,headers,question):
     url = origin_url+'search_company_name_by_register'
     rsp = requests.post(url, json=json.loads(args), headers=headers)
     return rsp.json()
-def search_company_name_by_sub_info(args,origin_url,headers):
+def search_company_name_by_sub_info(args,origin_url,headers,question):
     url = origin_url+'search_company_name_by_sub_info'
     rsp = requests.post(url, json=json.loads(args), headers=headers)
     return rsp.json()
-def get_legal_document(args,origin_url,headers):
+def get_legal_document(args,origin_url,headers,question):
     url = origin_url+'get_legal_document'
     rsp = requests.post(url, json=json.loads(args), headers=headers)
     return rsp.json()
-def search_case_num_by_legal_document(args,origin_url,headers):
+def search_case_num_by_legal_document(args,origin_url,headers,question):
     url = origin_url+'search_case_num_by_legal_document'
     rsp = requests.post(url, json=json.loads(args), headers=headers)
     return rsp.json()
-def investment_information(args,origin_url,headers):
+def investment_information(args,origin_url,headers,question):
     url = origin_url+'search_company_name_by_sub_info'
     rsp = requests.post(url, json=json.loads(args), headers=headers)
     rsp=rsp.json()
     sub_info_list=[]
+    """需要添加一个agent对过长的子公司名单进行总结操作"""
     for sub_company in rsp:
         url=origin_url+'get_sub_company_info'
         sub={"company_name":sub_company["公司名称"]}
         rsp_sub = requests.post(url, json=sub, headers=headers)
         sub_info_list.append(rsp_sub.json())
-    return sub_info_list
-def use_the_tool(tool_calls:str,origin_url:str,headers:dict):
+    sub_info_agent=agent_sub_info(question,sub_info_list)
+    return sub_info_agent
+def use_the_tool(tool_calls:str,origin_url:str,headers:dict,question):
     if tool_calls is not None:
         function = tool_calls[0].function
         func_args = function.arguments
@@ -296,6 +287,10 @@ def use_the_tool(tool_calls:str,origin_url:str,headers:dict):
             "search_case_num_by_legal_document":search_case_num_by_legal_document,
             "investment_information":investment_information
         }
-        return func_tools[func_name](func_args,origin_url,headers)
+        ans=func_tools[func_name](func_args,origin_url,headers,question)
+        if len(ans)==0:
+            return "没有结果，极可能是因为输入的值不完整，不符合规范"
+        else: 
+            return ans
     else:
         return None
