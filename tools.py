@@ -235,6 +235,10 @@ def search_company_name_by_info(args,origin_url,headers,question):
     url = origin_url+'search_company_name_by_info'
     rsp = requests.post(url, json=json.loads(args), headers=headers)
     return rsp.json()
+def search_company_name_by_info_industry(args,origin_url,headers,question):
+    url = origin_url+'search_company_name_by_info'
+    rsp = requests.post(url, json=json.loads(args), headers=headers)
+    return rsp.json
 def get_sub_company_info(args,origin_url,headers,question):
     url = origin_url+'get_sub_company_info'
     rsp = requests.post(url, json=json.loads(args), headers=headers)
@@ -249,6 +253,7 @@ def search_company_name_by_sub_info(args,origin_url,headers,question):
     return rsp.json()
 def get_legal_document(args,origin_url,headers,question):
     url = origin_url+'get_legal_document'
+    args = replace_chinese_parentheses(args)
     rsp = requests.post(url, json=json.loads(args), headers=headers)
     return rsp.json()
 def search_case_num_by_legal_document(args,origin_url,headers,question):
@@ -294,3 +299,5 @@ def use_the_tool(tool_calls:str,origin_url:str,headers:dict,question):
             return ans
     else:
         return None
+def replace_chinese_parentheses(s):
+    return s.replace('（', '(').replace('）', ')')

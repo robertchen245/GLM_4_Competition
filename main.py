@@ -6,7 +6,7 @@ import json
 from tools import tools,use_the_tool
 from agents import *
 client = ZhipuAI(api_key=tokens["glm_token"])
-question='我想了解天津卓朗信息科技股份有限公司的登记状况、企业性质以及成立日期。'
+question='广汇能源股份有限公司的主要投资者是哪一家企业？'
 agent_content = agent_question(question=question)
 print(agent_content)
 messages = [
@@ -16,7 +16,7 @@ messages = [
     },
     { 
         "role": "user",
-        "content": f"{question}{agent_content}"+"。请注意的标点符号格式要和主体保持一致，要与提问对齐。提示：对于问题中的公司名，大部分时候就是全称，但也可能是非全称的简称或英文名称，请尝试用tools将其转换为“全称”；对于案件号，请捕捉更正确的格式。稍后，才会提供tools的选择,请充分运用tools解决问题”"
+        "content": f"{question}{agent_content}"+"。请注意的标点符号格式要和主体保持一致，要与提问对齐，但如果多次查询无果，可以尝试将中英文括号进行替换，如（）和()之间进行互换，提示：对于主体中的公司名，一般是全称，但也可能是非全称的简称或英文名称，请尝试用tools将其转换为“全称”；对于案件号，请捕捉更正确的格式。稍后，才会提供tools的选择,请充分运用tools解决问题”"
     }
 ]
 "请你先将问题先进行拆分，便于你自己的理解，思考一下完成任务的顺序，以短语操作和箭头表示，简短，不做任何模拟，以避免污染数据，"
