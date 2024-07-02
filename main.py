@@ -1,8 +1,6 @@
 from zhipuai import ZhipuAI
 from tokens_ import tokens
-import requests
 from data_query import url as origin_url, headers
-import json
 from tools import tools,use_the_tool
 from agents import *
 client = ZhipuAI(api_key=tokens["glm_token"])
